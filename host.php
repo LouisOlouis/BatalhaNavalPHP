@@ -6,9 +6,13 @@ $dirname = "servidor/";
 if (!is_dir($dirname)) {
     mkdir($dirname, 0777, true);
 }
-$serverabertos = glob("$dirname{*.php}", GLOB_BRACE);
-$id = count($serverabertos) + 1;
+
+$id = 1;
 $servername = $_SERVER['DOCUMENT_ROOT'] . '/' . $dirname . "servidor_" . $id . ".php";
+while (file_exists($servername)) {
+    $id += 1;
+    $servername = $_SERVER['DOCUMENT_ROOT'] . '/' . $dirname . "servidor_" . $id . ".php";
+}
 
 if (!isset($_SESSION['serverc'])) {
    $_SESSION['serverc'] = $servername;
@@ -17,6 +21,8 @@ if (!isset($_SESSION['serverc'])) {
 }
 
 $fp = fopen($servername,'w');
+
+
 
 ?>
 <!DOCTYPE html>
@@ -31,4 +37,9 @@ $fp = fopen($servername,'w');
     <h3>Jogadores:</h3>
     <h4><?php echo $_SESSION['usuario']; ?></h4>
 </body>
+<script>
+window.addEventListener("beforeunload", function () {
+    navigator.sendBeacon("delete.php");
+});
+</script>
 </html>
