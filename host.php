@@ -2,13 +2,13 @@
 session_start();
 require 'basescripts.php';
 
-//cria a pasta de servidores, se não existir
+// cria a pasta de servidores
 $dirname = "servidor/";
 if (!is_dir($dirname)) {
     mkdir($dirname, 0777, true);
 }
 
-//encontra um nome de servidor disponivel
+// encontra nome livre
 $id = 1;
 $servername = $dirname . "servidor_" . $id . ".php";
 while (file_exists($servername)) {
@@ -16,27 +16,22 @@ while (file_exists($servername)) {
     $servername = $dirname . "servidor_" . $id . ".php";
 }
 
-//salva o nome do servidor na sessao
+// salva na sessão
 if (!isset($_SESSION['serverc'])) {
-   $_SESSION['serverc'] = $servername;
+    $_SESSION['serverc'] = $servername;
 } else {
     $servername = $_SESSION['serverc'];
 }
 
-//cria o arquivo do servidor
-$fp = fopen($servername,'w');
+// cria arquivo base
+file_put_contents($servername, file_get_contents('serverbase.php'));
 
-//copia a base do servidor
-fwrite($fp, file_get_contents('serverbase.php'));
-fclose($fp);
-
+// carrega dados
 require $servername;
 
-//coloca o jogador 1 como o usuario
+// define player 1
 writeserver("Player1", $_SESSION['usuario']);
 require $servername;
-
-
 
 ?>
 <!DOCTYPE html>

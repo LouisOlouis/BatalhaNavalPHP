@@ -6,16 +6,19 @@ $mensagem = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['player_name'])) {
         $_SESSION['usuario'] = $_POST['player_name'];
+
         if (isset($_POST['host'])) {
             header('Location: host.php');
             exit;
+
         } elseif (isset($_POST['join'])) {
-            if ($_POST['game_id'] != null or $_POST['game_id'] != "") {
+            if (!empty($_POST['game_id'])) {
                 $game_id = $_POST['game_id'];
                 header('Location: join.php?id=' . $game_id);
                 exit;
             }
         }
+
     } else {
         $mensagem = 'Insira um nome de usuario';
     }

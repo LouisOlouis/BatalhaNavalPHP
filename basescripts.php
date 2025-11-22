@@ -3,19 +3,22 @@
 function writeserver($var, $value) {
     global $servername;
 
-    // Carrega o arquivo
-    require $servername;
-    
-    // Altera o valor
+    // Carrega os dados existentes
+    if (file_exists($servername)) {
+        require $servername;
+    } else {
+        $serverinfo = [];
+    }
+
+    // Altera
     $serverinfo[$var] = $value;
 
-    // Marca como alterado
-    $serverinfo['Changes'] = true;
-
-    // Regera o PHP
+    // Salva somente os dados, sem lógica
     $template = "<?php\n\$serverinfo = " . var_export($serverinfo, true) . ";\n";
-
-    // Escreve o arquivo
     file_put_contents($servername, $template);
+}
 
+function pushserver() {
+    // Mantido só para não dar erro caso seja chamado
+    return;
 }

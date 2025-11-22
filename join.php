@@ -2,13 +2,13 @@
 session_start();
 require 'basescripts.php';
 
-//cria a pasta de servidores, se não existir
+// cria pasta
 $dirname = "servidor/";
 if (!is_dir($dirname)) {
     mkdir($dirname, 0777, true);
 }
 
-//encontra o nome do servidor entrado
+// servidor alvo
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $servername = $dirname . "servidor_" . $id . ".php";
 
@@ -16,13 +16,12 @@ if (!file_exists($servername)) {
     die("Jogo não encontrado.");
 }
 
-//pucha o server
+// carrega estado
 require $servername;
 
-//coloca o jogador 2 como o usuario
-writeserver("Player2",$_SESSION['usuario']);
+// define player 2
+writeserver("Player2", $_SESSION['usuario']);
 require $servername;
-
 
 ?>
 <!DOCTYPE html>
@@ -41,9 +40,4 @@ require $servername;
         <button type="submit" name="startgame">Atualizar</button>
     </form>
 </body>
-<!--<script>
-    window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon("delete.php");
-    });
-</script>-->    
 </html>
