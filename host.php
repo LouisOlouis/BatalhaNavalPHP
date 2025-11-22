@@ -50,9 +50,9 @@ require $servername;
         <button type="submit" name="startgame">Atualizar</button>
     </form>
 </body>
-<script>
+<!--<script>
     window.addEventListener("beforeunload", function () {
         navigator.sendBeacon("delete.php");
     });
-</script>
+</script>-->
 </html>
