@@ -10,7 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             header('Location: host.php');
             exit;
         } elseif (isset($_POST['join'])) {
-            if (isset($_POST['game_id'])) {
+            if ($_POST['game_id'] != null or $_POST['game_id'] != "") {
                 $game_id = $_POST['game_id'];
                 header('Location: join.php?id=' . $game_id);
                 exit;
