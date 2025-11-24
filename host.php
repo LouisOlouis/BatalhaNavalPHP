@@ -30,7 +30,7 @@ file_put_contents($servername, file_get_contents('serverbase.php'));
 require $servername;
 
 // define player 1
-writeserver("Player1", $_SESSION['usuario']);
+writeserver("Player1", $_SESSION['usuario'], $servername);
 require $servername;
 
 ?>

@@ -1,21 +1,25 @@
 <?php
 
-function writeserver($var, $value) {
-    global $servername;
+function writeserver($var, $value, $servername) {
+    if (!file_exists($servername)) {
+        die("ERRO: Arquivo não encontrado");
+    }
 
-    // Carrega os dados existentes
-    if (file_exists($servername)) {
-        require $servername;
-    } else {
-        $serverinfo = [];
+    // Carrega $serverinfo
+    require $servername;
+
+    if (!isset($serverinfo) || !is_array($serverinfo)) {
+        die("ERRO: Arquivo não contém \$serverinfo válido");
     }
 
     // Altera
     $serverinfo[$var] = $value;
 
-    // Salva somente os dados, sem lógica
+    // Salva
     $template = "<?php\n\$serverinfo = " . var_export($serverinfo, true) . ";\n";
     file_put_contents($servername, $template);
+
+    return true;
 }
 
 function pushserver() {
