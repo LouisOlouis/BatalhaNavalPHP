@@ -1,28 +1,66 @@
 <?php
-
-function writeserver($var, $value, $servername) {
-    if (!file_exists($servername)) {
-        die("ERRO: Arquivo não encontrado");
+function copiar_diretorio($origem, $destino) {
+    // Abre o diretório de origem
+    $dir = opendir($origem);
+    
+    // Cria o diretório de destino se ele não existir
+    @mkdir($destino);
+    
+    // Loop através do conteúdo do diretório de origem
+    while (false !== ($arquivo = readdir($dir))) {
+        // Ignora os ponteiros de diretório padrão '.' e '..'
+        if (($arquivo != '.') && ($arquivo != '..')) {
+            $caminho_origem = $origem . '/' . $arquivo;
+            $caminho_destino = $destino . '/' . $arquivo;
+            
+            // Se o item atual for um diretório, chama a função recursivamente
+            if (is_dir($caminho_origem)) {
+                copiar_diretorio($caminho_origem, $caminho_destino);
+            } else {
+                // Se for um arquivo, usa a função copy() para copiá-lo
+                copy($caminho_origem, $caminho_destino);
+            }
+        }
     }
-
-    // Carrega $serverinfo
-    require $servername;
-
-    if (!isset($serverinfo) || !is_array($serverinfo)) {
-        die("ERRO: Arquivo não contém \$serverinfo válido");
-    }
-
-    // Altera
-    $serverinfo[$var] = $value;
-
-    // Salva
-    $template = "<?php\n\$serverinfo = " . var_export($serverinfo, true) . ";\n";
-    file_put_contents($servername, $template);
-
-    return true;
+    
+    // Fecha o diretório
+    closedir($dir);
 }
 
-function pushserver() {
-    // Mantido só para não dar erro caso seja chamado
-    return;
+function delete_server($pasta) {
+    if (!is_dir($pasta)) return;
+
+    $itens = scandir($pasta);
+
+    foreach ($itens as $item) {
+        if ($item === '.' || $item === '..') continue;
+
+        $caminho = $pasta . '/' . $item;
+
+        if (is_dir($caminho)) {
+            delete_server($caminho);
+        } else {
+            unlink($caminho);
+        }
+    }
+
+    rmdir($pasta);
+
 }
+
+function write_server($dir, $var, $content) {
+    if (!is_dir($dir)) return false;
+
+    $caminho = $dir . $var. '.txt';
+
+    return file_put_contents($caminho, $content) !== false;
+}
+
+function read($dir, $file) {
+
+    $alvo = $dir . $file . '.txt';
+    if (!is_file($alvo)) return false;
+
+    return file_get_contents($alvo);
+}
+

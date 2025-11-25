@@ -1,5 +1,20 @@
 <?php 
 session_start();
+require 'basescripts.php';
+
+$base = 'servidor/';
+$limite = time() - (5 * 60);
+
+$pastas = glob($base . '*', GLOB_ONLYDIR);
+
+foreach ($pastas as $pasta) {
+    $mtime = filemtime($pasta);
+
+    if ($mtime < $limite) {
+        delete_server($pasta);
+        echo "Pasta removida totalmente: $pasta<br>";
+    }
+}
 
 $mensagem = "";
 

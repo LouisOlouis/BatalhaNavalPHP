@@ -10,18 +10,13 @@ if (!is_dir($dirname)) {
 
 // servidor alvo
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$servername = $dirname . "servidor_" . $id . ".php";
+$servername = $dirname . "servidor_" . $id . "/";
 
-if (!file_exists($servername)) {
+if (!is_dir($servername)) {
     die("Jogo não encontrado.");
 }
 
-// carrega estado
-require $servername;
-
-// define player 2
-writeserver("Player2", $_SESSION['usuario']);
-require $servername;
+write_server($servername,'Player2', $_SESSION['usuario']);
 
 ?>
 <!DOCTYPE html>
@@ -34,8 +29,8 @@ require $servername;
 <body>
     <h1>Você está em um jogo!</h1>
     <h3>Jogadores:</h3>
-    <h4><?php echo $serverinfo['Player1']; ?></h4>
-    <h4><?php echo $serverinfo['Player2'] ?? "Aguardando jogador 2..."; ?></h4>
+    <h4><?php echo read($servername,'Player1'); ?></h4>
+    <h4><?php echo read($servername,'Player2') ?? "Aguardando jogador 2..."; ?></h4>
     <form method="post">
         <button type="submit" name="startgame">Atualizar</button>
     </form>

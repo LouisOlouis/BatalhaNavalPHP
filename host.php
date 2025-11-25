@@ -10,28 +10,33 @@ if (!is_dir($dirname)) {
 
 // encontra nome livre
 $id = 1;
-$servername = $dirname . "servidor_" . $id . ".php";
-while (file_exists($servername)) {
+$servername = $dirname . "servidor_" . $id . "/";
+while (is_dir($servername)) {
     $id += 1;
-    $servername = $dirname . "servidor_" . $id . ".php";
+    $servername = $dirname . "servidor_" . $id . "/";
 }
 
 // salva na sessão
 if (!isset($_SESSION['serverc'])) {
     $_SESSION['serverc'] = $servername;
+    copiar_diretorio('serverbase', $servername);
 } else {
     $servername = $_SESSION['serverc'];
 }
 
-// cria arquivo base
-file_put_contents($servername, file_get_contents('serverbase.php'));
+write_server($servername,'Player1', $_SESSION['usuario']);
+$player2message = "Esperando player2...";
 
-// carrega dados
-require $servername;
+$await = true;
+$postime = filemtime($servername .'Player2.txt' );
+while ($await) {
+    if (filemtime($servername .'Player2.txt' ) <= $postime) {
+        $player2message = read($servername, 'Player2');
+        $await = false;
+    }
+    sleep(5);
+}
 
-// define player 1
-writeserver("Player1", $_SESSION['usuario'], $servername);
-require $servername;
 
 ?>
 <!DOCTYPE html>
@@ -44,15 +49,10 @@ require $servername;
 <body>
     <h1>Você está hospedando um jogo!</h1>
     <h3>Jogadores:</h3>
-    <h4><?php echo $serverinfo['Player1']; ?></h4>
-    <h4><?php echo $serverinfo['Player2'] ?? "Aguardando jogador 2..."; ?></h4>
+    <h4><?php echo read($servername,'Player1'); ?></h4>
+    <h4><?php echo $player2message; ?></h4>
     <form method="post">
         <button type="submit" name="startgame">Atualizar</button>
     </form>
 </body>
-<!--<script>
-    window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon("delete.php");
-    });
-</script>-->
 </html>
