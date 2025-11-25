@@ -25,18 +25,15 @@ if (!isset($_SESSION['serverc'])) {
 }
 
 write_server($servername,'Player1', $_SESSION['usuario']);
+
+$desativar = true;
+$disabled = $desativar ? 'disabled' : '';
+
 $player2message = "Esperando player2...";
-
-$await = true;
-$postime = filemtime($servername .'Player2.txt' );
-while ($await) {
-    if (filemtime($servername .'Player2.txt' ) <= $postime) {
-        $player2message = read($servername, 'Player2');
-        $await = false;
-    }
-    sleep(5);
+if (read($servername, 'Player2') !== 'NULL') {
+    $player2message = read($servername, 'Player2');
+    $desativar = false;
 }
-
 
 ?>
 <!DOCTYPE html>
@@ -48,11 +45,13 @@ while ($await) {
 </head>
 <body>
     <h1>Você está hospedando um jogo!</h1>
+    <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
     <h3>Jogadores:</h3>
     <h4><?php echo read($servername,'Player1'); ?></h4>
     <h4><?php echo $player2message; ?></h4>
+    <br>
     <form method="post">
-        <button type="submit" name="startgame">Atualizar</button>
+        <button type="submit" <?php echo $disabled ?> name="startgame">Iniciar Jogo</button>
     </form>
 </body>
 </html>

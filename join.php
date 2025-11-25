@@ -31,8 +31,5 @@ write_server($servername,'Player2', $_SESSION['usuario']);
     <h3>Jogadores:</h3>
     <h4><?php echo read($servername,'Player1'); ?></h4>
     <h4><?php echo read($servername,'Player2') ?? "Aguardando jogador 2..."; ?></h4>
-    <form method="post">
-        <button type="submit" name="startgame">Atualizar</button>
-    </form>
 </body>
 </html>

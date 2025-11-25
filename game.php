@@ -1,16 +1,13 @@
 <?php
 
-$linha = [];
-for ($i = 0; $i < 6; $i++) {
-    $linha[] = '0';
-}
-
-$coluna = [];
-for ($i = 0; $i < 6; $i++) {
-    $coluna[] = $linha;
-}
-
-$tabuleiroP1 = $coluna;
-$tabuleiroP2 = $coluna;
 
 ?>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Host - BatalhaNavalPHP</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Jogo iniciado!</h1>

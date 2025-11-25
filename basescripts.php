@@ -64,3 +64,16 @@ function read($dir, $file) {
     return file_get_contents($alvo);
 }
 
+function make_board() {
+    $linha = [];
+    for ($i = 0; $i < 6; $i++) {
+        $linha[] = '0';
+    }
+
+    $coluna = [];
+    for ($i = 0; $i < 6; $i++) {
+        $coluna[] = $linha;
+    }
+    
+    return $coluna;
+}
