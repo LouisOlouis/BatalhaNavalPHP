@@ -2,6 +2,10 @@
 session_start();
 require 'basescripts.php';
 
+if (!isset($_SESSION['usuario'])) {
+    die("Usuário não logado.");
+}
+
 // cria a pasta de servidores
 $dirname = "servidor/";
 if (!is_dir($dirname)) {
@@ -16,7 +20,7 @@ while (is_dir($servername)) {
     $servername = $dirname . "servidor_" . $id . "/";
 }
 
-// salva na sessão
+// salva na sessão e cria o servidor
 if (!isset($_SESSION['serverc'])) {
     $_SESSION['serverc'] = $servername;
     copiar_diretorio('serverbase', $servername);
@@ -24,15 +28,28 @@ if (!isset($_SESSION['serverc'])) {
     $servername = $_SESSION['serverc'];
 }
 
+if (!is_dir($servername)) {
+    session_destroy();
+    die("Erro ao criar servidor.");
+}
+
 write_server($servername,'Player1', $_SESSION['usuario']);
 
-$desativar = true;
-$disabled = $desativar ? 'disabled' : '';
+$disabled = 'disabled';
 
 $player2message = "Esperando player2...";
 if (read($servername, 'Player2') !== 'NULL') {
     $player2message = read($servername, 'Player2');
-    $desativar = false;
+    $disabled = '';
+}
+
+if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
+    if (read($servername, 'Player2') === 'NULL') {
+        die("Não é possível iniciar o jogo sem o Player 2.");
+    }
+    write_server($servername, 'Round', 'START');
+    header("Location: game.php");
+    exit();
 }
 
 ?>

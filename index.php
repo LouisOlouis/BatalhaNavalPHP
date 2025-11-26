@@ -3,7 +3,7 @@ session_start();
 require 'basescripts.php';
 
 $base = 'servidor/';
-$limite = time() - (5 * 60);
+$limite = time() - (10 * 60);
 
 $pastas = glob($base . '*', GLOB_ONLYDIR);
 
@@ -11,6 +11,10 @@ foreach ($pastas as $pasta) {
     $mtime = filemtime($pasta);
 
     if ($mtime < $limite) {
+        if (read($pasta, 'Player1') == $_SESSION['usuario']) {
+            session_unset();
+            echo "Sua sessão expirou por inatividade.<br>";
+        }
         delete_server($pasta);
         echo "Pasta removida totalmente: $pasta<br>";
     }
@@ -51,11 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h3>Feito por louis_louis</h3>
     <form method="post">
         <h3>Entre:</h3>
-        <input type="text" name="player_name" placeholder="Seu nome" required>
+        <input type="text" name="player_name" placeholder="Seu nome" autocomplete="off" required>
         <br><br>
         <button type="submit" name="host">Entrar como host</button>
         <br><br>
-        <input type="number" name="game_id" placeholder="ID do jogo">
+        <input type="number" name="game_id" autocomplete="off" placeholder="ID do jogo">
         <button type="submit" name="join">Entrar como jogador</button>
     </form>
     <h4><?php echo $mensagem; ?></h4>

@@ -18,6 +18,12 @@ if (!is_dir($servername)) {
 
 write_server($servername,'Player2', $_SESSION['usuario']);
 
+if (read($servername, 'Round') === 'START') {
+    write_server($servername,'Round', 'P1');
+    header("Location: game.php");
+    exit();
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

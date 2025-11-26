@@ -27,15 +27,15 @@ function copiar_diretorio($origem, $destino) {
     closedir($dir);
 }
 
-function delete_server($pasta) {
-    if (!is_dir($pasta)) return;
+function delete_server($dir) {
+    if (!is_dir($dir)) return;
 
-    $itens = scandir($pasta);
+    $itens = scandir($dir);
 
     foreach ($itens as $item) {
         if ($item === '.' || $item === '..') continue;
 
-        $caminho = $pasta . '/' . $item;
+        $caminho = $dir . '/' . $item;
 
         if (is_dir($caminho)) {
             delete_server($caminho);
@@ -44,7 +44,7 @@ function delete_server($pasta) {
         }
     }
 
-    rmdir($pasta);
+    rmdir($dir);
 
 }
 
