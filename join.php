@@ -19,8 +19,8 @@ if (!is_dir($servername)) {
 write_server($servername,'Player2', $_SESSION['usuario']);
 
 if (read($servername, 'Round') === 'START') {
-    write_server($servername,'Round', 'P1');
-    header("Location: game.php");
+    write_server($servername,'Round', 'Tab1');
+    header("Location: game.php?id=" . $id);
     exit();
 }
 
@@ -34,6 +34,7 @@ if (read($servername, 'Round') === 'START') {
 </head>
 <body>
     <h1>Você está em um jogo!</h1>
+    <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
     <h3>Jogadores:</h3>
     <h4><?php echo read($servername,'Player1'); ?></h4>
     <h4><?php echo read($servername,'Player2') ?? "Aguardando jogador 2..."; ?></h4>

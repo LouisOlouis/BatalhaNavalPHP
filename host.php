@@ -15,13 +15,15 @@ if (!is_dir($dirname)) {
 // encontra nome livre
 $id = 1;
 $servername = $dirname . "servidor_" . $id . "/";
-while (is_dir($servername)) {
-    $id += 1;
-    $servername = $dirname . "servidor_" . $id . "/";
-}
+
+
 
 // salva na sessão e cria o servidor
 if (!isset($_SESSION['serverc'])) {
+        while (is_dir($servername)) {
+            $id++;
+            $servername = $dirname . "servidor_" . $id . "/";
+        }
     $_SESSION['serverc'] = $servername;
     copiar_diretorio('serverbase', $servername);
 } else {
@@ -48,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
         die("Não é possível iniciar o jogo sem o Player 2.");
     }
     write_server($servername, 'Round', 'START');
-    header("Location: game.php");
+    header("Location: game.php?id=" . $id);
     exit();
 }
 
