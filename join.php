@@ -24,7 +24,7 @@ if ($player2 !== 'NULL' && $player2 !== $_SESSION['usuario']) {
 
 write_server($servername,'Player2', $_SESSION['usuario']);
 
-while (read($servername,'Round') == '2L') {
+if (read($servername,'Round') == '2L') {
     echo "ping";
     write_server($servername,'Round', 'NULL');
 }
@@ -55,8 +55,11 @@ if (read($servername, 'Round') === 'START') {
     <h4><?php echo read($servername,'Player2') ?? "Aguardando jogador 2..."; ?></h4>
 </body>
 <script>
-    window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=2`);
+    window.addEventListener("beforeunload", () => {
+        const data = new FormData();
+        data.append("id", "<?= $id ?>");
+        data.append("player", "2");
+        navigator.sendBeacon("leave.php", data);
     });
 </script>
 </html>

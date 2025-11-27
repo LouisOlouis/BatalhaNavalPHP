@@ -31,6 +31,16 @@ if (read($servername, 'Player1') == $_SESSION['usuario']) {
 
 //logica do leave
 
+if($seuplayer == 1) {
+    if(read($servername,'Round') == '1L') {
+        write_server($servername, 'Round', read($servername, 'LRound'));
+    }
+}
+if($seuplayer == 2) {
+    if(read($servername,'Round') == '2L') {
+        write_server($servername, 'Round', read($servername, 'LRound'));
+    }
+}
 
 
 $message = '';
@@ -65,8 +75,11 @@ if (read($servername, 'Round') === 'START') {
     ?>
 </body>
 <script>
-    window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon("leave.php?id=<?= $id ?>&player=<? $seuplayer ?>");
-    });
+window.addEventListener("beforeunload", () => {
+    const data = new FormData();
+    data.append("id", "<?= $id ?>");
+    data.append("player", "<?= $seuplayer ?>");
+    navigator.sendBeacon("leave.php", data);
+});
 </script>
 </html>

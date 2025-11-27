@@ -37,11 +37,10 @@ if (!is_dir($servername)) {
 
 write_server($servername,'Player1', $_SESSION['usuario']);
 
-while (read($servername,'Round') == '1L') {
-    echo "ping";
+if (read($servername,'Round') == '1L') {
     write_server($servername,'Round', 'NULL');
+    echo "ping";
 }
-
 
 $disabled = 'disabled';
 
@@ -69,6 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
     }
 }
 
+
+
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -90,8 +91,11 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
     </form>
 </body>
 <script>
-    window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon("leave.php?id=<?= $id ?>&player=1");
+    window.addEventListener("beforeunload", () => {
+        const data = new FormData();
+        data.append("id", "<?= $id ?>");
+        data.append("player", "1");
+        navigator.sendBeacon("leave.php", data);
     });
 </script>
 </html>

@@ -1,21 +1,24 @@
 <?php
 require 'basescripts.php';
 
-// cria pasta
-$dirname = "servidor/";
-if (!is_dir($dirname)) {
-    mkdir($dirname, 0777, true);
+$id = intval($_POST['id'] ?? 0);
+$player = intval($_POST['player'] ?? 0);
+
+if ($id <= 0 || $player <= 0) {
+    http_response_code(204);
+    exit;
 }
 
-// servidor alvo
-$id = isset($_GET['id']) ;
+$dirname = "servidor/";
 $servername = $dirname . "servidor_" . $id . "/";
 
-//player alvo
-$player = isset($_GET["player"]) ? intval($_GET["player"]) : null;
-
-
-
-if ($player !== null) {
-    write_server($servername, 'Round', $player . 'L');
+if (!is_dir($servername)) {
+    http_response_code(204); 
+    exit;
 }
+
+// atualiza estado do round
+write_server($servername, 'LRound', read($servername, 'Round'));
+write_server($servername, 'Round', $player . 'L');
+
+http_response_code(204); 

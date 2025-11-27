@@ -59,7 +59,7 @@ function write_server($dir, $var, $content) {
 function read($dir, $file) {
 
     $alvo = $dir . $file . '.txt';
-    if (!is_file($alvo)) return false;
+    if (!is_file($alvo)) return 'NULL';
 
     return file_get_contents($alvo);
 }
