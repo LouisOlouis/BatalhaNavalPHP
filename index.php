@@ -1,5 +1,6 @@
 <?php 
 session_start();
+//session_unset();
 require 'basescripts.php';
 
 $base = 'servidor/';
@@ -11,9 +12,11 @@ foreach ($pastas as $pasta) {
     $mtime = filemtime($pasta);
 
     if ($mtime < $limite) {
-        if (read($pasta, 'Player1') == $_SESSION['usuario']) {
-            session_unset();
-            echo "Sua sessão expirou por inatividade.<br>";
+        if (isset($_SESSION['usuario'])) {
+            if (read($pasta, 'Player1') == $_SESSION['usuario']) {
+                session_unset();
+                echo "Sua sessão expirou por inatividade.<br>";
+            }
         }
         delete_server($pasta);
         echo "Pasta removida totalmente: $pasta<br>";

@@ -16,10 +16,24 @@ if (!is_dir($servername)) {
     die("Jogo não encontrado.");
 }
 
+$player2 = read($servername, 'Player2');
+
+if ($player2 !== 'NULL' && $player2 !== $_SESSION['usuario']) {
+    die('Ja existe um player2 nessa sessao');
+}
+
 write_server($servername,'Player2', $_SESSION['usuario']);
 
+while (read($servername,'Round') == '2L') {
+    echo "ping";
+    write_server($servername,'Round', 'NULL');
+}
+
+if (read($servername, 'Round') == '1L') {
+    die('player 1 saiu');
+}
+
 if (read($servername, 'Round') === 'START') {
-    write_server($servername,'Round', 'Tab1');
     header("Location: game.php?id=" . $id);
     exit();
 }
@@ -35,8 +49,14 @@ if (read($servername, 'Round') === 'START') {
 <body>
     <h1>Você está em um jogo!</h1>
     <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
+    <h2>(se ao recarregar nao apareceu ping recarregue denovo antes do outro)</h2>
     <h3>Jogadores:</h3>
-    <h4><?php echo read($servername,'Player1'); ?></h4>
+    <h4><?php echo read($servername,'Player1') ?? "Jogador 1 saiu :("; ?></h4>
     <h4><?php echo read($servername,'Player2') ?? "Aguardando jogador 2..."; ?></h4>
 </body>
+<script>
+    window.addEventListener("beforeunload", function () {
+        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=2`);
+    });
+</script>
 </html>

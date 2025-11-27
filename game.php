@@ -16,14 +16,38 @@ if (!is_dir($servername)) {
     die("Jogo não encontrado.");
 }
 
+//inicio da logica comum
+$seuplayer = null;
+
+if (read($servername, 'Player1') == $_SESSION['usuario']) {
+    $seuplayer = 1;
+    
+} else if (read($servername,'Player2') == $_SESSION['usuario']) {
+    $seuplayer = 2;
+    
+} else {
+    die('Player inesistente');
+}
+
+//logica do leave
+
+
+
 $message = '';
+
+//inicio da logica do game
+if($seuplayer == 1) {
+    $message = 'VOCE E O PLAYER 1';
+    write_server($servername, 'Round', 'START');
+}
+if($seuplayer == 2) {
+    $message = 'VOCE E O PLAYER 2';
+    write_server($servername,'Round', 'Tab1');
+}
 
 if (read($servername, 'Round') === 'START') {
     $message = 'ESPERE O PLAYER 2';
 }
-
-
-
 
 ?>
 <!DOCTYPE html>
@@ -37,6 +61,12 @@ if (read($servername, 'Round') === 'START') {
     <h2>Jogo iniciado!</h2>
     <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
 <?php
-    if (read($servername, 'Round') === 'START') {
-        echo $message;
-    }
+    echo $message;
+    ?>
+</body>
+<script>
+    window.addEventListener("beforeunload", function () {
+        navigator.sendBeacon("leave.php?id=<?= $id ?>&player=<? $seuplayer ?>");
+    });
+</script>
+</html>

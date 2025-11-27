@@ -37,7 +37,21 @@ if (!is_dir($servername)) {
 
 write_server($servername,'Player1', $_SESSION['usuario']);
 
+while (read($servername,'Round') == '1L') {
+    echo "ping";
+    write_server($servername,'Round', 'NULL');
+}
+
+
 $disabled = 'disabled';
+
+if (read($servername, 'Round') == '2L') {
+    $disabled = 'disabled';
+    write_server($servername,'Player2', 'NULL');
+    $player2message = "Esperando player2...";
+}
+
+
 
 $player2message = "Esperando player2...";
 if (read($servername, 'Player2') !== 'NULL') {
@@ -46,12 +60,13 @@ if (read($servername, 'Player2') !== 'NULL') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
-    if (read($servername, 'Player2') === 'NULL') {
-        die("Não é possível iniciar o jogo sem o Player 2.");
+    if ($disabled == '') {
+        if (read($servername, 'Player2') === 'NULL') {
+            die("Não é possível iniciar o jogo sem o Player 2.");
+        }
+        header("Location: game.php?id=" . $id);
+        exit();
     }
-    write_server($servername, 'Round', 'START');
-    header("Location: game.php?id=" . $id);
-    exit();
 }
 
 ?>
@@ -65,12 +80,18 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
 <body>
     <h1>Você está hospedando um jogo!</h1>
     <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
+    <h2>(se ao recarregar nao apareceu ping recarregue denovo antes do outro)</h2>
     <h3>Jogadores:</h3>
-    <h4><?php echo read($servername,'Player1'); ?></h4>
+    <h4><?php echo read($servername,'Player1') ?? "Jogador 1 saiu :("; ?></h4>
     <h4><?php echo $player2message; ?></h4>
     <br>
     <form method="post">
         <button type="submit" <?php echo $disabled ?> name="startgame">Iniciar Jogo</button>
     </form>
 </body>
+<script>
+    window.addEventListener("beforeunload", function () {
+        navigator.sendBeacon("leave.php?id=<?= $id ?>&player=1");
+    });
+</script>
 </html>
