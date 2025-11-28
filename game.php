@@ -75,11 +75,8 @@ if (read($servername, 'Round') === 'START') {
     ?>
 </body>
 <script>
-window.addEventListener("beforeunload", () => {
-    const data = new FormData();
-    data.append("id", "<?= $id ?>");
-    data.append("player", "<?= $seuplayer ?>");
-    navigator.sendBeacon("leave.php", data);
-});
+    window.addEventListener("beforeunload", function () {
+        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=<?= $seuplayer ?>`);
+    });
 </script>
 </html>

@@ -37,8 +37,11 @@ if (!is_dir($servername)) {
 
 write_server($servername,'Player1', $_SESSION['usuario']);
 
+$liberate = 'false';
+
 if (read($servername,'Round') == '1L') {
     write_server($servername,'Round', 'NULL');
+    $liberate = 'true';
     echo "ping";
 }
 
@@ -81,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
 <body>
     <h1>Você está hospedando um jogo!</h1>
     <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
-    <h2>(se ao recarregar nao apareceu ping recarregue denovo antes do outro)</h2>
     <h3>Jogadores:</h3>
     <h4><?php echo read($servername,'Player1') ?? "Jogador 1 saiu :("; ?></h4>
     <h4><?php echo $player2message; ?></h4>
@@ -91,11 +93,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
     </form>
 </body>
 <script>
-    window.addEventListener("beforeunload", () => {
-        const data = new FormData();
-        data.append("id", "<?= $id ?>");
-        data.append("player", "1");
-        navigator.sendBeacon("leave.php", data);
+    window.addEventListener("beforeunload", function () {
+        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=1&liberate=<?= $liberate ?>`);
     });
 </script>
 </html>
