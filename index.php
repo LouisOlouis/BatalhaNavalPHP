@@ -4,7 +4,7 @@ session_start();
 require 'basescripts.php';
 
 $base = 'servidor/';
-$limite = time() - (10 * 60);
+$limite = time() - (30 * 60);
 
 $pastas = glob($base . '*', GLOB_ONLYDIR);
 
@@ -31,13 +31,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (isset($_POST['host'])) {
             header('Location: host.php');
-            exit;
+            exit();
 
         } elseif (isset($_POST['join'])) {
             if (!empty($_POST['game_id'])) {
                 $game_id = $_POST['game_id'];
                 header('Location: join.php?id=' . $game_id);
-                exit;
+                exit();
             }
         }
 

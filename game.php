@@ -30,34 +30,59 @@ if (read($servername, 'Player1') == $_SESSION['usuario']) {
 }
 
 //logica do leave
+$liberate = 'false';
 
 if($seuplayer == 1) {
     if(read($servername,'Round') == '1L') {
         write_server($servername, 'Round', read($servername, 'LRound'));
+        $liberate = 'true';
     }
 }
 if($seuplayer == 2) {
     if(read($servername,'Round') == '2L') {
         write_server($servername, 'Round', read($servername, 'LRound'));
+        $liberate = 'true';
     }
 }
+//denovo para verificar se deu erro
+if (read($servername, 'Round') == '1L' or read($servername, 'Round') == '2L') {
+    die('dead server error :(');
+}
 
-
+$pmessage = '';
 $message = '';
 
 //inicio da logica do game
-if($seuplayer == 1) {
-    $message = 'VOCE E O PLAYER 1';
-    write_server($servername, 'Round', 'START');
-}
-if($seuplayer == 2) {
-    $message = 'VOCE E O PLAYER 2';
-    write_server($servername,'Round', 'Tab1');
-}
+
+$disabled = '';
+$block = false;
+//para nao quebrar o jogo
+$tdisabled[0] = [0,0];
 
 if (read($servername, 'Round') === 'START') {
-    $message = 'ESPERE O PLAYER 2';
+    $pmessage = 'ESPERE O PLAYER 2';
 }
+
+if($seuplayer == 1) {
+    $pmessage = 'VOCE E O PLAYER 1';
+}
+if($seuplayer == 2) {
+    $pmessage = 'VOCE E O PLAYER 2';
+}
+
+if(read($servername,'Round') == 'Tab1') {
+    $message = "Jogador 1 escolha seus barcos";
+    if($seuplayer == 1) {
+        
+    }
+    if($seuplayer == 2) {
+        $block = true;
+    }
+}
+$tdisabled[1] = [3,3];
+
+
+
 
 ?>
 <!DOCTYPE html>
@@ -70,13 +95,50 @@ if (read($servername, 'Round') === 'START') {
 <body>
     <h2>Jogo iniciado!</h2>
     <h2>Recarregue a pagina sempre para pegar novas informaçoes do servidor</h2>
-<?php
-    echo $message;
+<?php 
+echo $pmessage;
+echo '<br>';
+echo $message;
+?>
+<br>
+<br>
+<div class="tab">
+    <?php
+        if($block) {
+            $disabled = 'disabled';
+        }
+        echo 'X__1_2_3__4_5_6';
+        echo '<br>';
+        //cria todas as linhas
+        for ( $i = 1; $i < 7; $i++) {
+            echo $i .'| ';
+            //cria as colunas
+            for ($j = 1; $j < 7; $j++) {
+                //verifica botao desativado
+                foreach ($tdisabled as $k) {
+                    if ($k[0] == $i) {
+                        if ($k[1] == $j) {
+                            $disabled = 'disabled';
+                        }
+                    }
+                    
+                }
+
+
+                echo '<button ' . $disabled . '>-</button>';
+                echo '  ';
+                if (!$block) {
+                    $disabled = '';
+                }
+            }
+            echo '<br>';
+        }
     ?>
+</div>
 </body>
 <script>
     window.addEventListener("beforeunload", function () {
-        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=<?= $seuplayer ?>`);
+        navigator.sendBeacon(`leave.php?id=<?= $id ?>&player=<?= $seuplayer ?>&liberate=<?= $liberate ?>`);
     });
 </script>
 </html>

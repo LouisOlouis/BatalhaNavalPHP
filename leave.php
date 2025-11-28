@@ -23,7 +23,9 @@ echo '<br>';
 
 if ($player !== null) {
     if ($liberate == 'false') {
-        write_server($servername, 'LRound', read($servername, 'Round'));
+        if (read($servername, 'Round') != '1L' or read($servername, 'Round') != '2L') {
+            write_server($servername, 'LRound', read($servername, 'Round'));
+        }
         write_server($servername, 'Round', $player . 'L');
         echo 'apagado';
     }
