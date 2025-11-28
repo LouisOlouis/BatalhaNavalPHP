@@ -39,6 +39,7 @@ if (read($servername, 'Round') == '1L') {
 
 if (read($servername, 'Round') == 'START') {
     write_server($servername,'Round', 'Tab1');
+    write_server($servername,'LRound', 'Tab1');
     header("Location: game.php?id=" . $id);
     exit();
 }

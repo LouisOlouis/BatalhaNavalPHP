@@ -67,7 +67,7 @@ function read($dir, $file) {
 function make_board() {
     $linha = [];
     for ($i = 0; $i < 6; $i++) {
-        $linha[] = '0';
+        $linha[] = '-';
     }
 
     $coluna = [];

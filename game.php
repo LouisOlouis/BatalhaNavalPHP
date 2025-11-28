@@ -1,4 +1,8 @@
 <?php
+//quando criei esse codigo so eu e deus sabia ler
+//agora e so deus boa sorte
+
+
 session_start();
 require 'basescripts.php';
 
@@ -69,6 +73,10 @@ if($seuplayer == 1) {
 if($seuplayer == 2) {
     $pmessage = 'VOCE E O PLAYER 2';
 }
+
+$TABULEIRO = make_board();
+
+write_server($servername, 'Tab' . $seuplayer, serialize($TABULEIRO));
 
 if(read($servername,'Round') == 'Tab1') {
     $message = "Jogador 1 escolha seus barcos";
