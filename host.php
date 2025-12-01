@@ -66,6 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
         if (read($servername, 'Player2') === 'NULL') {
             die("Não é possível iniciar o jogo sem o Player 2.");
         }
+        $TABULEIRO = make_board();
+        write_server($servername, 'Tab1', serialize($TABULEIRO));
         write_server($servername, 'Round', 'START');
         write_server($servername,'LRound', 'START');
         header("Location: game.php?id=" . $id);

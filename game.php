@@ -61,7 +61,7 @@ $message = '';
 $disabled = '';
 $block = false;
 //para nao quebrar o jogo
-$tdisabled[0] = [0,0];
+$tdisabled[0] = [10,10];
 
 if (read($servername, 'Round') === 'START') {
     $pmessage = 'ESPERE O PLAYER 2';
@@ -74,23 +74,77 @@ if($seuplayer == 2) {
     $pmessage = 'VOCE E O PLAYER 2';
 }
 
-$TABULEIRO = make_board();
+$i = 10;
+$j = 10;
+$TABULEIRO = unserialize(read($servername, 'Tab' . $seuplayer));
 
-write_server($servername, 'Tab' . $seuplayer, serialize($TABULEIRO));
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['pos'])) {
+        list($i, $j) = explode('-', $_POST['pos']);
+    }
+}
 
+$boatsplaced = 0;
+//vez do player 1
 if(read($servername,'Round') == 'Tab1') {
-    $message = "Jogador 1 escolha seus barcos";
+    $boatsplaced = 0;
+    $message = "Jogador 1 escolha seus barcos \n clique aonde deseja colocar o barco";
     if($seuplayer == 1) {
-        
+        $TABULEIRO[$i][$j] = 'B'; 
+        write_server($servername, 'Tab1', serialize($TABULEIRO));
+        foreach($TABULEIRO as $key => $value) {
+            foreach($value as $k => $v) {
+                if($v == 'B') {
+                    $boatsplaced += 1;
+                }
+            }
+        }
+        if($boatsplaced >= 3) {
+            unset($_POST['pos']);
+            write_server($servername, 'Round', 'Tab2');
+            write_server($servername, 'LRound', 'Tab2');
+        }
     }
     if($seuplayer == 2) {
         $block = true;
     }
 }
-$tdisabled[1] = [3,3];
 
+//vez do player 2
+if(read($servername,'Round') == 'Tab2') {
+    $boatsplaced = 0;
+    unset($_POST['pos']);
+    $message = "Jogador 2 escolha seus barcos \n clique aonde deseja colocar o barco";
+    if($seuplayer == 1) {
+        $block = true;
+    }
+    if($seuplayer == 2) {
+        $TABULEIRO[$i][$j] = 'B'; 
+        write_server($servername, 'Tab2', serialize($TABULEIRO));
+        foreach($TABULEIRO as $key => $value) {
+            foreach($value as $k => $v) {
+                if($v == 'B') {
+                    $boatsplaced += 1;
+                }
+            }
+        }
+        if($boatsplaced >= 3) {
+            unset($_POST['pos']);
+            write_server($servername, 'Round', 'ROUND1');
+            write_server($servername, 'LRound', 'ROUND1');
+        }
+    }
+}
 
+foreach($TABULEIRO as $key => $value) {
+    foreach($value as $k => $v) {
+        if($v == 'X' or $v == 'O' or $v == 'B') {
+            $tdisabled[] = [$key, $k];
+        }
+    }
+}
 
+var_dump($boatsplaced);
 
 ?>
 <!DOCTYPE html>
@@ -110,18 +164,18 @@ echo $message;
 ?>
 <br>
 <br>
-<div class="tab">
+<form method="post">
     <?php
         if($block) {
             $disabled = 'disabled';
         }
-        echo 'X__1_2_3__4_5_6';
+        echo 'X__0_1_2__3_4_5';
         echo '<br>';
-        //cria todas as linhas
-        for ( $i = 1; $i < 7; $i++) {
+        //cria todas as linhas++
+        for ( $i = 0; $i < 6; $i++) {
             echo $i .'| ';
             //cria as colunas
-            for ($j = 1; $j < 7; $j++) {
+            for ($j = 0; $j < 6; $j++) {
                 //verifica botao desativado
                 foreach ($tdisabled as $k) {
                     if ($k[0] == $i) {
@@ -133,7 +187,7 @@ echo $message;
                 }
 
 
-                echo '<button ' . $disabled . '>-</button>';
+                echo '<button type="submit" name="pos" value="'.$i.'-'.$j.'" ' . $disabled . '>' . $TABULEIRO[$i][$j] . '</button>';
                 echo '  ';
                 if (!$block) {
                     $disabled = '';
@@ -142,7 +196,9 @@ echo $message;
             echo '<br>';
         }
     ?>
-</div>
+    <br>
+    <button type="submit" name="refresh">Recarregar</button>
+</form>
 </body>
 <script>
     window.addEventListener("beforeunload", function () {

@@ -27,10 +27,9 @@ write_server($servername,'Player2', $_SESSION['usuario']);
 $liberate = 'false';
 
 
-
 if (read($servername,'Round') == '2L') {
     echo "ping";
-    write_server($servername,'Round', 'NULL');
+    write_server($servername,'Round', read($servername,'LRound'));
 }
 
 if (read($servername, 'Round') == '1L') {
@@ -40,9 +39,13 @@ if (read($servername, 'Round') == '1L') {
 if (read($servername, 'Round') == 'START') {
     write_server($servername,'Round', 'Tab1');
     write_server($servername,'LRound', 'Tab1');
+    $TABULEIRO = make_board();
+    write_server($servername, 'Tab2', serialize($TABULEIRO));
     header("Location: game.php?id=" . $id);
     exit();
 }
+
+
 
 ?>
 <!DOCTYPE html>

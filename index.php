@@ -2,6 +2,7 @@
 session_start();
 //session_unset();
 require 'basescripts.php';
+unset($_POST['pos']);
 
 $base = 'servidor/';
 $limite = time() - (30 * 60);
