@@ -41,6 +41,7 @@ if (read($servername, 'Round') == 'START') {
     write_server($servername,'LRound', 'Tab1');
     $TABULEIRO = make_board();
     write_server($servername, 'Tab2', serialize($TABULEIRO));
+    write_server($servername, 'TabR2', serialize($TABULEIRO));
     header("Location: game.php?id=" . $id);
     exit();
 }

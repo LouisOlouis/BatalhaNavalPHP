@@ -68,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
         }
         $TABULEIRO = make_board();
         write_server($servername, 'Tab1', serialize($TABULEIRO));
+        write_server($servername, 'TabR1', serialize($TABULEIRO));
         write_server($servername, 'Round', 'START');
         write_server($servername,'LRound', 'START');
         header("Location: game.php?id=" . $id);
