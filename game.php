@@ -1,229 +1,188 @@
 <?php
+//quando criei esse codigo so eu e deus sabia mecher
+//agora e so deus boa sorte
+
 session_start();
 require 'basescripts.php';
 
 // cria pasta
 $dirname = "servidor/";
-if (!is_dir($dirname)) {
-    mkdir($dirname, 0777, true);
-}
+if (!is_dir($dirname)) mkdir($dirname, 0777, true);
 
 // servidor alvo
 $id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 $servername = $dirname . "servidor_" . $id . "/";
+if (!is_dir($servername)) die("Jogo não encontrado.");
 
-if (!is_dir($servername)) {
-    die("Jogo não encontrado.");
-}
-
-// identificação do player
+// identifica o player
 $seuplayer = null;
+if (read($servername,'Player1') == $_SESSION['usuario']) $seuplayer = 1;
+else if (read($servername,'Player2') == $_SESSION['usuario']) $seuplayer = 2;
+else die('Player inexistente');
 
-if (read($servername, 'Player1') == $_SESSION['usuario']) {
-    $seuplayer = 1;
-} else if (read($servername,'Player2') == $_SESSION['usuario']) {
-    $seuplayer = 2;
-} else {
-    die('Player inexistente');
-}
-
-// lógica do leave
+// lógica leave
 $liberate = 'false';
-
-if ($seuplayer == 1 && read($servername,'Round') == '1L') {
-    write_server($servername, 'Round', read($servername,'LRound'));
-    $liberate = 'true';
-}
-
-if ($seuplayer == 2 && read($servername,'Round') == '2L') {
-    write_server($servername, 'Round', read($servername,'LRound'));
-    $liberate = 'true';
-}
-
-if (read($servername,'Round') == '1L' || read($servername,'Round') == '2L') {
-    die('dead server error :(');
-}
+if ($seuplayer == 1 && read($servername,'Round') == '1L'){ write_server($servername,'Round',read($servername,'LRound')); $liberate='true'; }
+if ($seuplayer == 2 && read($servername,'Round') == '2L'){ write_server($servername,'Round',read($servername,'LRound')); $liberate='true'; }
+if (read($servername,'Round')=='1L'||read($servername,'Round')=='2L') die('dead server error :(');
 
 $pmessage = '';
 $message = "";
 $block = false;
 
 // leitura segura do tabuleiro
-$raw = read($servername, 'Tab'.$seuplayer);
+$raw = read($servername,'Tab'.$seuplayer);
 $TABULEIRO = $raw ? @unserialize($raw) : null;
+if (!is_array($TABULEIRO)) $TABULEIRO = array_fill(0,6,array_fill(0,6,'-'));
 
-if (!is_array($TABULEIRO)) {
-    $TABULEIRO = array_fill(0, 6, array_fill(0, 6, '-'));
+// POST
+$pi = $pj = null;
+if ($_SERVER["REQUEST_METHOD"]=="POST" && isset($_POST['pos'])) list($pi,$pj)=array_map('intval',explode('-',$_POST['pos']));
+
+// conta barcos
+function count_boats(array $t){
+    $c=0; foreach($t as $r) foreach($r as $v) if($v==='B')$c++; return $c;
 }
 
-// leitura do POST
-$pi = null;
-$pj = null;
+// >>> FUNÇÃO DE VITÓRIA <<<
+function check_win($servername){
+    $t1 = unserialize(read($servername,'Tab1')); if (!is_array($t1)) return null;
+    $t2 = unserialize(read($servername,'Tab2')); if (!is_array($t2)) return null;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['pos'])) {
-    list($pi, $pj) = array_map('intval', explode('-', $_POST['pos']));
+    if(count_boats($t1)==0) return 2; // Player 2 venceu
+    if(count_boats($t2)==0) return 1; // Player 1 venceu
+    return null;
 }
 
-// contador de barcos
-function count_boats(array $tab) {
-    $c = 0;
-    foreach ($tab as $row) {
-        foreach ($row as $cell) {
-            if ($cell === 'B') $c++;
-        }
-    }
-    return $c;
-}
-
-$pmessage = "VOCÊ É O PLAYER ".$seuplayer;
-
-// ---------------------------
-// FASE TAB1 (PLAYER 1 COLOCA BARCOS)
-// ---------------------------
-if (read($servername,'Round') == 'Tab1') {
-    $message = "Jogador 1 coloque 3 barcos";
-
-    if ($seuplayer == 1) {
-        if ($pi !== null && isset($TABULEIRO[$pi][$pj]) && $TABULEIRO[$pi][$pj] === '-') { // <- correção
-            $TABULEIRO[$pi][$pj] = 'B';
-            write_server($servername, 'Tab1', serialize($TABULEIRO));
-        }
-
-        if (count_boats($TABULEIRO) >= 3) {
-            write_server($servername, 'Round', 'Tab2');
-            write_server($servername, 'LRound', 'Tab2');
-        }
-    } else $block = true;
-}
-
-// ---------------------------
-// FASE TAB2 (PLAYER 2 COLOCA BARCOS)
-// ---------------------------
-if (read($servername,'Round') == 'Tab2') {
-    $message = "Jogador 2 coloque 3 barcos";
-
-    if ($seuplayer == 2) {
-        if ($pi !== null && isset($TABULEIRO[$pi][$pj]) && $TABULEIRO[$pi][$pj] === '-') { // <- correção
-            $TABULEIRO[$pi][$pj] = 'B';
-            write_server($servername, 'Tab2', serialize($TABULEIRO));
-        }
-
-        if (count_boats($TABULEIRO) >= 3) {
-            write_server($servername,'Round','ROUND1');
-            write_server($servername,'LRound','ROUND1');
-        }
-    } else $block = true;
-}
-
-// ---------------------------
-// DESATIVAÇÃO DE BOTÕES (APOS FASE DE BARCOS)
-// ---------------------------
-$tdisabled = [];
+$pmessage="VOCÊ É O PLAYER $seuplayer";
 $current_round = read($servername,'Round');
 
-if ($current_round != 'Tab1' && $current_round != 'Tab2') {
-    foreach ($TABULEIRO as $r => $linha) {
-        foreach ($linha as $c => $val) {
-            if ($val == 'X' || $val == 'O') { // B removido para poder atacar barco inimigo
-                $tdisabled[] = [$r,$c];
-            }
+// ================= TELA DE VITÓRIA =================
+if($current_round=='WIN1'){
+    echo "<h1>PLAYER 1 VENCEU!</h1>";
+    die();
+}
+if($current_round=='WIN2'){
+    echo "<h1>PLAYER 2 VENCEU!</h1>";
+    die();
+}
+
+// ================= TAB1 =================
+if($current_round=='Tab1'){
+    $message="Jogador 1 coloque 3 barcos";
+
+    if($seuplayer==1){
+        if($pi!==null && $TABULEIRO[$pi][$pj]=='-'){
+            $TABULEIRO[$pi][$pj]='B';
+            write_server($servername,'Tab1',serialize($TABULEIRO));
         }
+        if(count_boats($TABULEIRO)>=5){ write_server($servername,'Round','Tab2'); write_server($servername,'LRound','Tab2'); }
+    }else $block=true;
+}
+
+// ================= TAB2 =================
+if($current_round=='Tab2'){
+    $message="Jogador 2 coloque 3 barcos";
+
+    if($seuplayer==2){
+        if($pi!==null && $TABULEIRO[$pi][$pj]=='-'){
+            $TABULEIRO[$pi][$pj]='B';
+            write_server($servername,'Tab2',serialize($TABULEIRO));
+        }
+        if(count_boats($TABULEIRO)>=5){ write_server($servername,'Round','ROUND1'); write_server($servername,'LRound','ROUND1'); }
+    }else $block=true;
+}
+
+// desativar botões depois da fase de barcos
+$tdisabled=[];
+if($current_round!='Tab1'&&$current_round!='Tab2'){
+    foreach($TABULEIRO as $r=>$ln) foreach($ln as $c=>$v){
+        if($v=='X'||$v=='O') $tdisabled[]=[$r,$c];
     }
 }
 
-// ---------------------------
-// ROUND 1
-// ---------------------------
-if ($current_round == 'ROUND1') {
-    $message = "Jogador 1 ataque uma posição";
+// ================= ROUND1 =================
+if($current_round=='ROUND1'){
+    $message="Jogador 1 ataque";
 
-    $PTAB = unserialize(read($servername,'Tab2'));
-    if (!is_array($PTAB)) $PTAB = array_fill(0,6,array_fill(0,6,'-'));
+    $PTAB = unserialize(read($servername,'Tab2')); if(!is_array($PTAB))$PTAB=array_fill(0,6,array_fill(0,6,'-'));
+    $raw=read($servername,'TabR'.$seuplayer);
+    $TABULEIRO=$raw?unserialize($raw):array_fill(0,6,array_fill(0,6,'-'));
 
-    $raw = read($servername,'TabR'.$seuplayer);
-    $TABULEIRO = $raw ? unserialize($raw) : array_fill(0,6,array_fill(0,6,'-'));
+    if($seuplayer==1){
+        if($pi!==null){
+            $TABULEIRO[$pi][$pj]='X';
 
-    if ($seuplayer == 1) {
-        if ($pi !== null && isset($TABULEIRO[$pi][$pj])) {
-            $TABULEIRO[$pi][$pj] = 'X';
-
-            if ($PTAB[$pi][$pj] == 'B') {
-                $PTAB[$pi][$pj] = 'O';
-                $TABULEIRO[$pi][$pj] = 'O';
+            if($PTAB[$pi][$pj]=='B'){
+                $TABULEIRO[$pi][$pj]='O';
+                $PTAB[$pi][$pj]='O';
                 write_server($servername,'Tab2',serialize($PTAB));
             }
 
             write_server($servername,'TabR1',serialize($TABULEIRO));
-            write_server($servername,'Round','ROUND2');
-            write_server($servername,'LRound','ROUND2');
+
+            // >>> CHECA VITÓRIA <<<
+            $v = check_win($servername);
+            if($v){ write_server($servername,'Round',"WIN$v"); }
+
+            if(!$v){
+                write_server($servername,'Round','ROUND2');
+                write_server($servername,'LRound','ROUND2');
+            }
         }
-    } else $block = true;
+    }else $block=true;
 }
 
-// ---------------------------
-// ROUND 2
-// ---------------------------
-if ($current_round == 'ROUND2') {
-    $message = "Jogador 2 ataque uma posição";
+// ================= ROUND2 =================
+if($current_round=='ROUND2'){
+    $message="Jogador 2 ataque";
 
-    $PTAB = unserialize(read($servername,'Tab1'));
-    if (!is_array($PTAB)) $PTAB = array_fill(0,6,array_fill(0,6,'-'));
+    $PTAB = unserialize(read($servername,'Tab1')); if(!is_array($PTAB))$PTAB=array_fill(0,6,array_fill(0,6,'-'));
+    $raw=read($servername,'TabR'.$seuplayer);
+    $TABULEIRO=$raw?unserialize($raw):array_fill(0,6,array_fill(0,6,'-'));
 
-    $raw = read($servername,'TabR'.$seuplayer);
-    $TABULEIRO = $raw ? unserialize($raw) : array_fill(0,6,array_fill(0,6,'-'));
+    if($seuplayer==2){
+        if($pi!==null){
+            $TABULEIRO[$pi][$pj]='X';
 
-    if ($seuplayer == 2) {
-        if ($pi !== null && isset($TABULEIRO[$pi][$pj])) {
-            $TABULEIRO[$pi][$pj] = 'X';
-
-            if ($PTAB[$pi][$pj] == 'B') {
-                $PTAB[$pi][$pj] = 'O';
-                $TABULEIRO[$pi][$pj] = 'O';
+            if($PTAB[$pi][$pj]=='B'){
+                $TABULEIRO[$pi][$pj]='O';
+                $PTAB[$pi][$pj]='O';
                 write_server($servername,'Tab1',serialize($PTAB));
             }
-
             write_server($servername,'TabR2',serialize($TABULEIRO));
-            write_server($servername,'Round','ROUND1');
-            write_server($servername,'LRound','ROUND1');
+
+            // >>> CHECA VITÓRIA <<<
+            $v = check_win($servername);
+            if($v){ write_server($servername,'Round',"WIN$v"); }
+
+            if(!$v){
+                write_server($servername,'Round','ROUND1');
+                write_server($servername,'LRound','ROUND1');
+            }
         }
-    } else $block = true;
+    }else $block=true;
 }
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Game - BatalhaNavalPHP</title>
-</head>
+<head><meta charset="UTF-8"><title>Batalha Naval</title></head>
 <body>
-
 <h2>Jogo iniciado!</h2>
-<h3>Recarregue a página para atualizações</h3>
+<h3>Recarregue a página para ver atualizações</h3>
 
-<?php 
-echo $pmessage."<br>";
-echo $message."<br><br>";
-?>
+<?php echo $pmessage."<br>".$message."<br><br>"; ?>
 
 <form method="post">
 <?php
 echo "X__0_1_2__3_4_5<br>";
-
-for ($row = 0; $row < 6; $row++) {
-    echo $row."| ";
-    for ($col = 0; $col < 6; $col++) {
-
-        $btn_disabled = $block ? 'disabled' : '';
-
-        foreach ($tdisabled as $d) {
-            if ($d[0] == $row && $d[1] == $col) {
-                $btn_disabled = 'disabled'; break;
-            }
-        }
-
-        $val = $TABULEIRO[$row][$col] ?? '-';
-
-        echo '<button type="submit" name="pos" value="'.$row.'-'.$col.'" '.$btn_disabled.'>'.$val.'</button> ';
+for($r=0;$r<6;$r++){
+    echo "$r| ";
+    for($c=0;$c<6;$c++){
+        $d=$block?'disabled':'';
+        foreach($tdisabled as $x) if($x[0]==$r&&$x[1]==$c)$d='disabled';
+        $v=$TABULEIRO[$r][$c]??'-';
+        echo "<button type='submit' name='pos' value='$r-$c' $d>$v</button> ";
     }
     echo "<br>";
 }
@@ -232,10 +191,9 @@ for ($row = 0; $row < 6; $row++) {
 </form>
 
 <script>
-window.addEventListener("beforeunload", () => {
+window.addEventListener("beforeunload",()=> {
     navigator.sendBeacon("leave.php?id=<?= $id ?>&player=<?= $seuplayer ?>&liberate=<?= $liberate ?>");
 });
 </script>
-
 </body>
 </html>
