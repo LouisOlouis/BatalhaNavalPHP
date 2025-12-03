@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST" && isset($_POST['startgame'])) {
 }
 
 
-
+echo '<br>' . $servername;
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">

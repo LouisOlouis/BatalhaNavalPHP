@@ -94,10 +94,13 @@ if($current_round=='Tab2'){
 }
 
 // desativar botões depois da fase de barcos
-$tdisabled=[];
-if($current_round!='Tab1'&&$current_round!='Tab2'){
-    foreach($TABULEIRO as $r=>$ln) foreach($ln as $c=>$v){
-        if($v=='X'||$v=='O') $tdisabled[]=[$r,$c];
+// Desabilitar apenas as jogadas já feitas pelo jogador atual
+if($current_round!='Tab1' && $current_round!='Tab2'){
+    $raw = read($servername,'TabR'.$seuplayer);
+    $TABR = $raw ? unserialize($raw) : array_fill(0,6,array_fill(0,6,'-'));
+
+    foreach($TABR as $r=>$ln) foreach($ln as $c=>$v){
+        if($v=='X' || $v=='O') $tdisabled[]=[$r,$c]; // só o que ele já tentou
     }
 }
 
